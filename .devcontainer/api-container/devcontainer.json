@@ -1,0 +1,35 @@
+{
+  "name": "Restaurant API Dev",
+  "dockerComposeFile": "../../docker-compose.dev.yaml",
+  "service": "api_restaurant",
+  "workspaceFolder": "/api",
+  "overrideCommand": true,
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": [
+          "tests"
+        ],
+        "editor.formatOnSave": true,
+        "remote.autoForwardPorts": false
+      },
+      "extensions": [
+        "njpwerner.autodocstring",
+        "ms-vscode-remote.remote-containers",
+        "tamasfe.even-better-toml",
+        "miguelsolorio.fluent-icons",
+        "christian-kohler.path-intellisense",
+        "ms-python.python",
+        "manishsencha.readme-preview",
+        "miguelsolorio.symbols",
+        "netcorext.uuid-generator",
+        "vscode-icons-team.vscode-icons",
+        "redhat.vscode-yaml",
+        "ms-vscode.makefile-tools",
+        "github.vscode-github-actions"
+      ]
+    }
+  }
+}

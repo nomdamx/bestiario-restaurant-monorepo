@@ -1,0 +1,38 @@
+services:
+  db_restaurant:
+    image: postgres:17
+    container_name: db_restaurant-service
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_restaurant-data:/var/lib/postgresql/data
+    env_file:
+      - ./api/dev.env
+
+  pgadmin_restaurant:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_restaurant-service
+    env_file:
+      - ./api/dev.env
+    ports:
+      - "8080:80"
+    depends_on:
+      - db_restaurant
+
+  api_restaurant:
+    build:
+      context: ./api
+      dockerfile: dockerfile.dev
+    container_name: api_restaurant-service
+    env_file:
+      - ./api/dev.env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./api:/api
+    depends_on:
+      - db_restaurant
+    restart: unless-stopped
+  
+volumes:
+  db_restaurant-data:
