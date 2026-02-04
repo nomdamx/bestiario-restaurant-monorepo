@@ -13,7 +13,7 @@
         "buildType": "apk" 
       },
       "env": {
-        "PROD_FLASK_API_URL": "$PROD_FLASK_API_URL" 
+        "PROD_FLASK_API_URL": "$EXPO_PUBLIC_API_URL" 
       }
     },
     "production": {
