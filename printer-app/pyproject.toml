@@ -1,0 +1,18 @@
+[project]
+name = "desktop-tkinter-app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "customtkinter>=5.2.2",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.1",
+    "python-escpos>=3.1",
+    "python-socketio[client]>=5.15.1",
+]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.17.0",
+]
