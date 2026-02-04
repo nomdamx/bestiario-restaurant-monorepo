@@ -7,7 +7,8 @@ export const ticket_style = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: "column",
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingBottom: 16,
     },
     headerContainer: {
         flexDirection: "column",
@@ -20,6 +21,7 @@ export const ticket_style = StyleSheet.create({
         marginBottom: 4,
     },
     table: {
+        flex: 1,
         marginTop: 8,
         marginBottom: 12,
     },
