@@ -101,7 +101,7 @@ export async function registerUser(
     const json = await safeFetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, display_name: username }),
     });
 
     if (json?.error) return null;
