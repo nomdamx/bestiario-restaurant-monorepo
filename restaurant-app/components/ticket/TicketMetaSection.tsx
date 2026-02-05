@@ -19,7 +19,12 @@ export default function TicketMeta({
     setComments,
     triggerFlush,
 }: Props) {
-    const { ticket, updateClientTicket, updateCommentsTicket } = useTicket();
+    const {
+        ticket,
+        updateClientTicket,
+        updateCommentsTicket,
+        setSyncingTicket,
+    } = useTicket();
     const commentsRef = useRef("");
     const hasHiddenTopComments =
         comments.trim().length > 0 &&
@@ -68,8 +73,10 @@ export default function TicketMeta({
     }
 
     async function flushTicket(force = false) {
+        setSyncingTicket(true);
         await saveClientIfNeeded(force);
         await saveCommentsIfNeeded(force);
+        setSyncingTicket(false);
     }
 
     return (

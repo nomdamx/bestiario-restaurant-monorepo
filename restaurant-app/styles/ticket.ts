@@ -20,6 +20,10 @@ export const ticket_style = StyleSheet.create({
         fontSize: 14,
         marginBottom: 4,
     },
+    tabText: {
+        fontSize: 16,
+        marginBottom: 4,
+    },
     table: {
         flex: 1,
         marginTop: 8,

@@ -26,7 +26,7 @@ wheels = [
 ]
 
 [[package]]
-name = "api-flask-template"
+name = "api-bestiario-restaurant"
 version = "0.0.0"
 source = { virtual = "." }
 dependencies = [

@@ -5,6 +5,7 @@ import {
     Pressable,
     Alert,
     ActivityIndicator,
+    StyleSheet,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import type { APIResponse, Ticket } from "types/api_types";
@@ -15,12 +16,12 @@ import BackButton from "components/BackButton";
 import Constants from "expo-constants";
 import { useAuth } from "hooks/AuthContext";
 
-import { forms_style } from "styles/forms";
 import { ticket_style, ticket_buttons_style } from "styles/ticket";
 import TicketHeader from "components/ticket/TicketHeader";
 import TicketMeta from "components/ticket/TicketMetaSection";
 import { Ionicons, AntDesign } from "@expo/vector-icons";
 import { TimerText } from "components/TimerText";
+import DetailsMenu from "components/ticket/TicketDetailsMenu";
 
 export default function TicketView() {
     const { uuid, isForPrinted } = useLocalSearchParams();
@@ -29,9 +30,9 @@ export default function TicketView() {
         ticket,
         payStoredTicket,
         refreshFromAPI,
-        syncingTicket,
         setTicket,
         initialized,
+        setSyncingTicket,
     } = useTicket();
 
     const API_URL = Constants.expoConfig?.extra?.flaskApiUrl;
@@ -42,6 +43,7 @@ export default function TicketView() {
     const [clientName, setClientName] = useState("");
     const { user, authFetch } = useAuth();
     const [trigger, setTrigger] = useState(0);
+    const [menuVisible, setMenuVisible] = useState(false);
 
     function triggerFlush() {
         setTrigger(trigger + 1);
@@ -103,7 +105,8 @@ export default function TicketView() {
 
     async function handleRefresh() {
         if (!ticket) return;
-        await refreshFromAPI(ticket?.uuid);
+        setSyncingTicket(true);
+        await refreshFromAPI(ticket?.uuid).then(() => setSyncingTicket(false));
     }
 
     async function handlePrintForPay() {
@@ -224,14 +227,6 @@ export default function TicketView() {
 
     return (
         <>
-            {syncingTicket && (
-                <View style={ticket_style.syncOverlay}>
-                    <View style={ticket_style.syncBox}>
-                        <ActivityIndicator size="large" />
-                        <Text style={ticket_style.syncText}>Cargando...</Text>
-                    </View>
-                </View>
-            )}
             <View
                 style={{
                     flexDirection: "row",
@@ -250,8 +245,8 @@ export default function TicketView() {
                         alignItems: "center",
                     }}
                 >
-                    <Text style={ticket_style.headerText}>
-                        Ticket: #{ticket.ticket_number}
+                    <Text style={ticket_style.tabText}>
+                        Ticket #{ticket.ticket_number}
                         {" - "}
                         <TimerText timestamp={ticket.created_at} />
                     </Text>
@@ -267,7 +262,10 @@ export default function TicketView() {
                 >
                     {(user?.auth_level === "admin" ||
                         user?.auth_level === "manager") && (
-                        <Pressable onPress={handleDelete}>
+                        <Pressable
+                            onPress={handleDelete}
+                            style={style.iconButton}
+                        >
                             {/* <Text
                                 style={[
                                     ticket_buttons_style.text,
@@ -283,12 +281,15 @@ export default function TicketView() {
                             />
                         </Pressable>
                     )}
-                    <Pressable onPress={handleRefresh}>
+                    <Pressable onPress={handleRefresh} style={style.iconButton}>
                         {/* <Text>Recargar</Text> */}
                         <Ionicons name="refresh" size={24} color="black" />
                     </Pressable>
                     {!isForPrintedBool && (
-                        <Pressable onPress={triggerFlush}>
+                        <Pressable
+                            onPress={triggerFlush}
+                            style={style.iconButton}
+                        >
                             {/* <Text>Guardar</Text> */}
                             <Ionicons
                                 name="save-outline"
@@ -297,10 +298,28 @@ export default function TicketView() {
                             />
                         </Pressable>
                     )}
-                    {/* <Pressable>
-                        <Text>Menu-Desplegable</Text>
-                        <Ionicons name="menu-outline" size={24} color="black" />
-                    </Pressable> */}
+                    <View>
+                        <Pressable
+                            onPress={() => setMenuVisible(!menuVisible)}
+                            style={style.iconButton}
+                        >
+                            <Ionicons
+                                name="ellipsis-vertical"
+                                size={24}
+                                color="#333"
+                            />
+                        </Pressable>
+                        <DetailsMenu
+                            menuVisible={menuVisible}
+                            setMenuVisible={setMenuVisible}
+                        />
+                        {menuVisible && (
+                            <Pressable
+                                style={style.backdrop}
+                                onPress={() => setMenuVisible(false)}
+                            />
+                        )}
+                    </View>
                 </View>
             </View>
             <View style={ticket_style.container}>
@@ -398,3 +417,18 @@ export default function TicketView() {
         </>
     );
 }
+
+const style = StyleSheet.create({
+    backdrop: {
+        position: "absolute",
+        top: 0,
+        left: -1000,
+        right: -1000,
+        bottom: -1000,
+        backgroundColor: "transparent",
+        zIndex: 999,
+    },
+    iconButton: {
+        padding: 8,
+    },
+});
