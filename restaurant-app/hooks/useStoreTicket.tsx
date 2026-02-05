@@ -263,6 +263,34 @@ export function useStoreTicket() {
         }
     }
 
+    async function updateTableNumber(id_restaurant_table: number) {
+        if (!ticketState || syncLock.current || !id_restaurant_table) return;
+
+        syncLock.current = true;
+        setSyncing(true);
+
+        try {
+            const res = await authFetch(API_URL + "ticket/table", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: ticketState.id,
+                    id_restaurant_table: id_restaurant_table,
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error(`Table update failed ${res.status}`);
+            }
+            await fetchTicketStable(ticketState.uuid);
+        } catch (err) {
+            console.log(String(err));
+        } finally {
+            syncLock.current = false;
+            setSyncing(false);
+        }
+    }
+
     const guarded = useCallback(
         <T extends (...args: any[]) => any>(fn: T) =>
             (...args: Parameters<T>) => {
@@ -275,6 +303,7 @@ export function useStoreTicket() {
     return {
         ticket: ticketState,
         syncingTicket: syncing,
+        setSyncingTicket: setSyncing,
         initialized,
         setTicket: save,
         setComments,
@@ -285,5 +314,6 @@ export function useStoreTicket() {
         removeOrder: guarded(removeOrder),
         updateClientTicket,
         updateCommentsTicket,
+        updateTableNumber,
     };
 }

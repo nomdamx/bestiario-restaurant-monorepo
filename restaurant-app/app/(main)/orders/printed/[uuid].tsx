@@ -84,8 +84,7 @@ function OrderRow({ order }: RowProps) {
 
 export default function PrintedTicketView() {
     const { uuid } = useLocalSearchParams();
-    const { ticket, refreshFromAPI, syncingTicket, setTicket, initialized } =
-        useTicket();
+    const { ticket, refreshFromAPI, setTicket, initialized } = useTicket();
 
     const API_URL = Constants.expoConfig?.extra?.flaskApiUrl;
     const [loadingTicket, setLoadingTicket] = useState(true);
@@ -199,14 +198,6 @@ export default function PrintedTicketView() {
 
     return (
         <>
-            {syncingTicket && (
-                <View style={ticket_style.syncOverlay}>
-                    <View style={ticket_style.syncBox}>
-                        <ActivityIndicator size="large" />
-                        <Text style={ticket_style.syncText}>Cargando...</Text>
-                    </View>
-                </View>
-            )}
             <Pressable
                 onPress={() => router.replace("/")}
                 style={({ pressed }) => [

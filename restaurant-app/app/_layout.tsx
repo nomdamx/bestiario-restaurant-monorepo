@@ -3,6 +3,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TicketProvider } from "hooks/TicketContext";
 import { AuthProvider, useAuth } from "hooks/AuthContext";
 import { colors } from "styles/tokens";
+import GlobalSyncModal from "components/GlobalSyncModal";
 
 export default function RootLayout() {
     return (
@@ -30,6 +31,7 @@ function AuthGate() {
                     contentStyle: { backgroundColor: colors.background },
                 }}
             />
+            <GlobalSyncModal />
         </TicketProvider>
     );
 }
