@@ -36,7 +36,9 @@ export async function deleteStoredToken() {
 }
 
 export async function generateSessionToken(): Promise<string> {
-    const json = await safeFetch(API_URL + "session-token");
+    const json = await safeFetch(API_URL + "session-token", {
+        headers: { "X-App-Version": "vapp-0.1.0" },
+    });
     return json.token;
 }
 
@@ -46,7 +48,10 @@ export async function createSession(
 ): Promise<Session> {
     const json = await safeFetch(API_URL + `create-session/${userId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "X-App-Version": "vapp-0.1.0",
+        },
         body: JSON.stringify({ token }),
     });
 
@@ -62,7 +67,10 @@ export async function validateSessionToken(
 ): Promise<SessionValidationResult> {
     const json = await safeFetch(API_URL + "session-validation", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "X-App-Version": "vapp-0.1.0",
+        },
         body: JSON.stringify({ token }),
     });
 
@@ -85,7 +93,10 @@ export async function validateSessionToken(
 export async function invalidateSession(sessionId: string) {
     const res = await fetch(API_URL + "session-invalidation", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "X-App-Version": "vapp-0.1.0",
+        },
         body: JSON.stringify({ session: sessionId }),
     });
 
@@ -100,7 +111,10 @@ export async function registerUser(
 ): Promise<User | null> {
     const json = await safeFetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "X-App-Version": "vapp-0.1.0",
+        },
         body: JSON.stringify({ username, password, display_name: username }),
     });
 
@@ -120,7 +134,10 @@ export async function validateUser(
 ): Promise<User | null> {
     const json = await safeFetch(API_URL + "user-validation", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "X-App-Version": "vapp-0.1.0",
+        },
         body: JSON.stringify({ username, password }),
     });
 
@@ -134,4 +151,24 @@ export async function validateUser(
     }
 
     return null;
+}
+
+export async function check_need_password(): Promise<boolean> {
+    const need_password_request = await fetch(API_URL + "need_password", {
+        method: "GET",
+        headers: { "X-App-Version": "vapp-0.1.0" },
+    }).then((data) => data.json());
+    return validateBool(need_password_request.value);
+}
+
+export async function check_admin_see_config(): Promise<boolean> {
+    const admin_see_password = await fetch(API_URL + "admin_see_config", {
+        method: "GET",
+        headers: { "X-App-Version": "vapp-0.1.0" },
+    }).then((data) => data.json());
+    return validateBool(admin_see_password.value);
+}
+
+function validateBool(text: string): boolean {
+    return text.toLowerCase().trim() === "true";
 }

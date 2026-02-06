@@ -18,8 +18,10 @@ from app.response_versions import (
     get_version
 )
 from app.models.users import(
-    BaseUser
+    BaseUser,
+    User
 )
+from app.models import SystemConfig
 
 from sqlalchemy.orm import Query
 
@@ -48,7 +50,7 @@ class BaseAuthController:
 
                 user_data = self._user_schema(**data).dict()
                 new_data:BaseUser = self._model(**user_data)
-                new_data.set_password(data["password"])
+                new_data.set_password(self.normalize_password(str(data["password"])))
 
                 self.session.add(new_data)
                 self.session.commit()
@@ -86,14 +88,15 @@ class BaseAuthController:
     def get_all(self,request:Request):
         version= request.headers.get("Accept")
         users,pagination_data = self.__query_args__(
-            args = request.args    
+            args = request.args,
+            is_for_usernames= True
         )
 
         if len(users) > 0 and users:
             return self.__return_json__(
                 response = users,
                 version = version,
-                pagination_data = pagination_data
+                pagination_data = pagination_data,
             )
         else:
             raise ValidationError(details="There is no users")
@@ -111,18 +114,26 @@ class BaseAuthController:
             raise ValidationError(details="User doesn't exist or invalid given data")
             
     def validate_user(self,data,request:Request):
-        if "username" in data and "password" in data:
+        print(data)
+
+        if "username" in data:
+            need_password = self.controller_check_username_need_password()
+            if need_password and not "password" in data:
+                raise ValidationError(details="invalid given data, not username or password")
+                
             version = request.headers.get("Accept")
 
-            _user = self.__query_username__(data["username"])
+            _user:User = self.__query_username__(data["username"])
             if _user == None:
                 raise ValidationError(details="User doesn't exist or invalid given data")
-                
-            data_pass = _user.validate_password(data["password"])
+            
+            is_staff = str(_user.auth_level).lower() in ["admin","manager"]
+            password = self.normalize_password(str(data["password"]))
+            data_pass = _user.validate_password(password) if need_password or is_staff else True
             
             if data_pass == False:
                 raise ValidationError(details="Password is incorrect or invalid given data")
-                
+            
             return self.__return_json__(
                 response=self.__parse_user__(_user),
                 version=version
@@ -131,6 +142,38 @@ class BaseAuthController:
         else:
             raise ValidationError(details="invalid given data, not username or password")
         
+
+    def controller_check_username_need_password(self):
+        _query = self.session.query(SystemConfig).filter_by(key="user_need_password").first()
+        if not _query:
+            return True
+        return _query.check_bool()
+    
+    def controller_check_admin_see_config(self):
+        _query = self.session.query(SystemConfig).filter_by(key="admin_see_config").first()
+        if not _query:
+            return True
+        return _query.check_bool()
+    
+    def controller_change_username_need_password(self,data):
+        value:str = str(data.get("value","True")).lower().replace(" ","")
+        if value not in ["true","false"]:
+            value = "true"
+        _query = self.session.query(SystemConfig).filter_by(key="user_need_password").first()
+        if not _query:
+            return
+        _query.value = value
+        self.session.commit()
+
+    def controller_change_user_password(self,data):
+        if not "password" in data or not "id" in data:
+            raise ValidationError(details="invalid given data, not username or password")
+        password = self.normalize_password(str(data["password"]))
+        _query = self.session.query(User).filter_by(id = data["id"]).first()
+        if not _query:
+            raise ValidationError(details="User doesn't exist")
+        _query.set_password(password)
+        self.session.commit()
 
     # auth
     def generateSessionToken(self):
@@ -213,7 +256,7 @@ class BaseAuthController:
             raise ValidationError(details="Invalid Session")
 
     #helpers
-    def __return_json__(self,response:Response,version:str = None,pagination_data:dict = {}):
+    def __return_json__(self,response:Response,version:str = None,pagination_data:dict = {}, is_for_username:bool = False):
         if isinstance(response,Response):
             return response
         
@@ -225,20 +268,21 @@ class BaseAuthController:
             return res_version(
                 response=response,
                 type=type(self._model()).__name__,
-                pagination_data = pagination_data
+                pagination_data = pagination_data,
             ).get_response()
         
         else:
             raise VersionError(details="Error in versioning")
         
-    def __query_args__(self,args = None,_id:int = None,need_all:bool = True):
+    def __query_args__(self,args = None,_id:int = None,need_all:bool = True, is_for_usernames:bool = False):
         query:Query = self.session.query(self._model)
         args = args if args else request.args
 
         is_active_text = args.get("is_active")
+        is_active = True
         if is_active_text:
             is_active = self.__str_to_bool__(is_active_text)
-            query = query.filter_by(is_active = is_active)
+        query = query.filter_by(is_active = is_active)
 
         if _id:
             if isinstance(_id,int):
@@ -264,7 +308,8 @@ class BaseAuthController:
         result = query.all() if need_all else query.first()
         
         if result:
-            
+            if is_for_usernames:
+                return self.__parse_usernames(result), pagination_data
             return self.__parse_user__(result),pagination_data
         
         else:
@@ -278,6 +323,9 @@ class BaseAuthController:
             return [dt.get_json() for dt in data]
         else:
             return [data.get_json()]
+        
+    def __parse_usernames(self,data):
+        return [dt.get_simplified_json() for dt in data]
             
     def __query_id__(self,_id):
         if isinstance(_id,int):
@@ -288,3 +336,6 @@ class BaseAuthController:
         if isinstance(_username,str):
             return self.session.query(self._model).filter_by(username = _username).first()
         return None
+    
+    def normalize_password(self,password:str) -> str:
+        return password.lower().replace(" ","")

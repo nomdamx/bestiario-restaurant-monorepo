@@ -5,10 +5,12 @@ import re
 def ctx_middleware():
     auth_header = request.headers.get("Authorization")
     accept_header = request.headers.get("Accept")
+    app_version = request.headers.get("X-App-Version","0.0.0")
     set_context(
         RequestContext(
             user_token = get_user_token_from_header(auth_header),
-            version_api = extract_api_version(accept_header)
+            version_api = extract_api_version(accept_header),
+            version_app=app_version
         )
     )
 

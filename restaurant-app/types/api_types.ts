@@ -23,6 +23,12 @@ type User = {
     username: string;
 };
 
+export type UserDropdown = {
+    username: string;
+    display_name: string;
+    auth_level: string;
+};
+
 export type Category = {
     id: number;
     name: string;

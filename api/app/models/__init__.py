@@ -16,3 +16,5 @@ from .orders import (
     Order,
     OrderAddons
 )
+
+from .system import SystemConfig
