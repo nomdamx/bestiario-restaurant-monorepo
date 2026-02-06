@@ -24,6 +24,12 @@ class TicketRoute(BaseRoute):
             request=request
         )
     
+    @ticket_bp.route("/table",methods=["PATCH"],strict_slashes=False)
+    def route_patch_table_number():
+        return ticket_controller.controller_update_table_number(
+            request=request
+        )
+    
     @ticket_bp.route("/pay",methods=["PUT"],strict_slashes=False)
     def route_update_paid_status():
         return ticket_controller.controller_update_paid_status(

@@ -13,6 +13,7 @@ from app.response_versions import (
 from sqlalchemy.orm import Query,with_loader_criteria
 from app.infra import get_context
 import logging
+from app.models import SystemConfig
 
 class BaseController:
     def __init__(self,model,schema):
@@ -128,6 +129,8 @@ class BaseController:
             version = ctx.version_api,
             pagination_data = pagination_data
         )
+    
+
 
 
     ### Helpers

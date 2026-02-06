@@ -10,6 +10,7 @@ class RequestContext(BaseModel):
     user_token: str | None = Field(default=None)
     version_api: str | None = Field(default=None)
     user:UserSchemaContext | None = Field(default=None)
+    version_app:str | None = Field(default=None)
 
     @model_validator(mode="after")
     def set_user(self):

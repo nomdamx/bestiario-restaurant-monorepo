@@ -1,0 +1,131 @@
+import { Text, Pressable, StyleSheet, FlatList } from "react-native";
+import { Dispatch, SetStateAction, useState } from "react";
+import { RestaurantTable } from "types/api_types";
+
+export interface Props {
+    selected: RestaurantTable | null;
+    setSelected: Dispatch<SetStateAction<RestaurantTable | null>>;
+    tables: RestaurantTable[];
+}
+
+export default function DropdownTable({
+    selected,
+    setSelected,
+    tables,
+}: Props) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <>
+            <Pressable style={styles.button} onPress={() => setIsOpen(!isOpen)}>
+                <Text style={styles.buttonText}>
+                    {selected ? (
+                        <>
+                            {selected.number === 0 ? (
+                                <>Para llevar</>
+                            ) : (
+                                <>Mesa {selected.number}</>
+                            )}
+                        </>
+                    ) : (
+                        "Selecciona una mesa"
+                    )}
+                </Text>
+                <Text style={styles.arrow}>{isOpen ? "▲" : "▼"}</Text>
+            </Pressable>
+
+            {isOpen && (
+                <FlatList
+                    data={tables}
+                    keyExtractor={(item) => item.id.toString()}
+                    style={styles.list}
+                    renderItem={({ item }) => (
+                        <Pressable
+                            style={[
+                                styles.item,
+                                selected?.id === item.id && styles.selectedItem,
+                            ]}
+                            onPress={() => {
+                                setSelected(item);
+                                setIsOpen(false);
+                            }}
+                        >
+                            <Text
+                                style={[
+                                    styles.itemText,
+                                    selected?.id === item.id &&
+                                        styles.selectedText,
+                                ]}
+                            >
+                                {item.number === 0 ? (
+                                    <>Para llevar</>
+                                ) : (
+                                    <>Mesa {item.number}</>
+                                )}
+                            </Text>
+                            {selected?.id === item.id && (
+                                <Text style={styles.checkmark}>✓</Text>
+                            )}
+                        </Pressable>
+                    )}
+                />
+            )}
+        </>
+    );
+}
+
+const styles = StyleSheet.create({
+    button: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 14,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 8,
+        marginBottom: 8,
+    },
+    buttonText: {
+        fontSize: 16,
+        color: "#333",
+        flex: 1,
+    },
+    arrow: {
+        fontSize: 12,
+        color: "#666",
+        marginLeft: 8,
+    },
+    list: {
+        maxHeight: 200,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 8,
+        marginBottom: 16,
+    },
+    item: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f0f0f0",
+    },
+    selectedItem: {
+        backgroundColor: "#f0f8ff",
+    },
+    itemText: {
+        fontSize: 16,
+        color: "#333",
+    },
+    selectedText: {
+        color: "#007AFF",
+        fontWeight: "600",
+    },
+    checkmark: {
+        fontSize: 18,
+        color: "#007AFF",
+        fontWeight: "bold",
+    },
+});

@@ -11,6 +11,7 @@ class RequestContextFilter(logging.Filter):
         record.user_id = "-"
         record.version_api = "-"
         record.username = "-"
+        record.version_app = "-"
 
         if ctx:
             if ctx.user:
@@ -18,6 +19,8 @@ class RequestContextFilter(logging.Filter):
                 record.username = ctx.user.username
             if ctx.version_api:
                 record.version_api = ctx.version_api
+            if ctx.version_app:
+                record.version_app = ctx.version_app
 
         return True
 
@@ -31,6 +34,7 @@ def setup_request_logger():
     formatter = logging.Formatter(
         "[%(levelname)s] "
         "[request] "
+        "[version_app:%(version_app)s] "
         "[id_user:%(user_id)s] "
         "[username:%(username)s] "
         "[v:%(version_api)s] "
@@ -80,6 +84,7 @@ def setup_error_logger():
     formatter = logging.Formatter(
         "[%(levelname)s] "
         "[request] "
+        "[version_app:%(version_app)s] "
         "[id_user:%(user_id)s] "
         "[username:%(username)s] "
         "[v:%(version_api)s] "

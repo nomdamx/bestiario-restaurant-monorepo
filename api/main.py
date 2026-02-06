@@ -19,4 +19,4 @@ def index():
 
 if __name__ == "__main__":
     socketio.start_background_task(ticket_watcher,app)
-    socketio.run(app,host="0.0.0.0", port=5000,debug=False,use_reloader=False) # type: ignore
+    socketio.run(app,host="0.0.0.0", port=5000,debug=True,use_reloader=False) # type: ignore

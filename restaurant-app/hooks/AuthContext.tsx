@@ -133,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 ...options.headers,
                 Authorization: `Bearer ${token}`,
                 Accept: "application/vnd.restaurant-api.v1+json",
+                "X-App-Version": "vapp-0.1.0",
             },
         });
     }
