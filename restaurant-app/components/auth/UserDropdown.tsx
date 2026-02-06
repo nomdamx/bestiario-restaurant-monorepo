@@ -13,51 +13,64 @@ export default function DropdownUser({
     selected,
     setSelected,
     setUser,
-    users,
+    users = [],
 }: Props) {
     const [isOpen, setIsOpen] = useState(false);
+
+    const validUsers = Array.isArray(users) ? users : [];
 
     return (
         <>
             <Pressable style={styles.button} onPress={() => setIsOpen(!isOpen)}>
                 <Text style={styles.buttonText}>
-                    {selected ? <>{selected}</> : "Selecciona un usuario"}
+                    {selected ? selected : "Selecciona un usuario"}
                 </Text>
                 <Text style={styles.arrow}>{isOpen ? "▲" : "▼"}</Text>
             </Pressable>
 
             {isOpen && (
                 <FlatList
-                    data={users}
-                    keyExtractor={(item) => item.username}
+                    data={validUsers}
+                    keyExtractor={(item, index) =>
+                        item?.username?.toString() || `user-${index}`
+                    }
                     style={styles.list}
-                    renderItem={({ item }) => (
-                        <Pressable
-                            style={[
-                                styles.item,
-                                selected === item.username &&
-                                    styles.selectedItem,
-                            ]}
-                            onPress={() => {
-                                setSelected(item.username);
-                                setUser(item);
-                                setIsOpen(false);
-                            }}
-                        >
-                            <Text
+                    ListEmptyComponent={
+                        <Text style={styles.emptyText}>
+                            No hay usuarios disponibles
+                        </Text>
+                    }
+                    renderItem={({ item }) => {
+                        if (!item || !item.username) return null;
+
+                        return (
+                            <Pressable
                                 style={[
-                                    styles.itemText,
+                                    styles.item,
                                     selected === item.username &&
-                                        styles.selectedText,
+                                        styles.selectedItem,
                                 ]}
+                                onPress={() => {
+                                    setSelected(item.username);
+                                    setUser(item);
+                                    setIsOpen(false);
+                                }}
                             >
-                                {item.username}
-                            </Text>
-                            {selected === item.username && (
-                                <Text style={styles.checkmark}>✓</Text>
-                            )}
-                        </Pressable>
-                    )}
+                                <Text
+                                    style={[
+                                        styles.itemText,
+                                        selected === item.username &&
+                                            styles.selectedText,
+                                    ]}
+                                >
+                                    {item.username}
+                                </Text>
+                                {selected === item.username && (
+                                    <Text style={styles.checkmark}>✓</Text>
+                                )}
+                            </Pressable>
+                        );
+                    }}
                 />
             )}
         </>
@@ -121,5 +134,11 @@ const styles = StyleSheet.create({
         color: "#007AFF",
         fontWeight: "bold",
         marginLeft: 8,
+    },
+    emptyText: {
+        padding: 20,
+        textAlign: "center",
+        color: "#999",
+        fontSize: 14,
     },
 });

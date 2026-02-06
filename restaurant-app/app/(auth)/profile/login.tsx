@@ -22,13 +22,20 @@ export default function LoginScreen() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const API_URL = Constants.expoConfig?.extra?.flaskApiUrl;
+    const [loadingUsers, setLoadingUsers] = useState(true);
 
     async function fetchUsers() {
-        console.log("iniciando");
-        const request = await authFetch(API_URL + "auth/user/", {
-            method: "GET",
-        }).then((response) => response.json());
-        setUsers(request.response);
+        setLoadingUsers(true);
+        try {
+            const request = await authFetch(API_URL + "auth/user/", {
+                method: "GET",
+            }).then((response) => response.json());
+            setUsers(request.response);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        } finally {
+            setLoadingUsers(false);
+        }
     }
 
     async function handle_need_password() {
@@ -144,12 +151,16 @@ export default function LoginScreen() {
                 onChangeText={setUsername}
                 autoCapitalize="none"
             /> */}
-            <DropdownUser
-                selected={username}
-                setSelected={setUsername}
-                setUser={setLogUser}
-                users={users}
-            />
+            {loadingUsers ? (
+                <Text>Cargando usuarios...</Text>
+            ) : (
+                <DropdownUser
+                    selected={username}
+                    setSelected={setUsername}
+                    setUser={setLogUser}
+                    users={users}
+                />
+            )}
             {(logUser?.auth_level === "admin" ||
                 logUser?.auth_level === "manager") && (
                 <View style={forms_style.passwordContainer}>
