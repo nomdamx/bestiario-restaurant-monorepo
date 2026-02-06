@@ -38,6 +38,13 @@ class User(BaseUser):
             "deleted_at":self.deleted_at
         }
 
+    def get_simplified_json(self):
+        return {
+            "username":self.username,
+            "display_name":self.display_name,
+            "auth_level":self.auth_level
+        }
+
     def check_auth_level(self,levels):
         if self.auth_level.lower() == AuthLevelEnum.ADMIN:
             return True
