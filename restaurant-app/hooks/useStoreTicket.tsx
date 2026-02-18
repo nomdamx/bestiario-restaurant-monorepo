@@ -143,7 +143,11 @@ export function useStoreTicket() {
     }
 
     async function payStoredTicket() {
-        if (!ticketState || syncLock.current) return;
+        if (!ticketState) return;
+        if (syncLock.current) {
+            console.log("BLOQUEADO POR SYNCLOCK");
+            return;
+        }
 
         syncLock.current = true;
         setSyncing(true);
@@ -291,6 +295,12 @@ export function useStoreTicket() {
         }
     }
 
+    async function waitForSyncLock() {
+        while (syncLock.current) {
+            await new Promise((r) => setTimeout(r, 50));
+        }
+    }
+
     const guarded = useCallback(
         <T extends (...args: any[]) => any>(fn: T) =>
             (...args: Parameters<T>) => {
@@ -304,6 +314,7 @@ export function useStoreTicket() {
         ticket: ticketState,
         syncingTicket: syncing,
         setSyncingTicket: setSyncing,
+        waitForSyncLock,
         initialized,
         setTicket: save,
         setComments,

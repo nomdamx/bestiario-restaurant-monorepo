@@ -33,6 +33,7 @@ export default function TicketView() {
         setTicket,
         initialized,
         setSyncingTicket,
+        waitForSyncLock,
     } = useTicket();
 
     const API_URL = Constants.expoConfig?.extra?.flaskApiUrl;
@@ -113,7 +114,7 @@ export default function TicketView() {
         if (!ticket) return;
         triggerFlush();
 
-        await new Promise((r) => setTimeout(r, 250));
+        await waitForSyncLock();
         const response = await authFetch(
             API_URL + "ticket/" + ticket.uuid + "/print?for_pay=true",
             {
