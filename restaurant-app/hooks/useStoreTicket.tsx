@@ -46,6 +46,12 @@ export function useStoreTicket() {
         refreshFromStorage();
     }, []);
 
+    async function waitForSyncLock() {
+        while (syncLock.current) {
+            await new Promise((r) => setTimeout(r, 50));
+        }
+    }
+
     async function fetchTicketStable(uuid: string, retries = 4) {
         let lastTotal: number | null = null;
         let lastTicket: Ticket | null = null;
@@ -131,24 +137,57 @@ export function useStoreTicket() {
 
     async function payStoredTicket() {
         if (!ticketState) return;
-        if (syncLock.current) {
-            console.log("BLOQUEADO POR SYNCLOCK");
-            return;
-        }
+
+        await waitForSyncLock();
 
         syncLock.current = true;
         setSyncing(true);
 
         try {
-            console.log("pagando");
+            if (ticketState.comments) {
+                const commentsRes = await authFetch(
+                    API_URL + "ticket/" + ticketState.uuid + "/comments",
+                    {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            comments: ticketState.comments,
+                        }),
+                    },
+                );
+
+                if (!commentsRes.ok) {
+                    throw new Error(
+                        `Comments flush failed ${commentsRes.status}`,
+                    );
+                }
+            }
+
+            if (ticketState.client_name) {
+                const client_nameRes = await authFetch(
+                    API_URL + "ticket/" + ticketState.uuid + "/client",
+                    {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            client_name: ticketState.client_name,
+                        }),
+                    },
+                );
+
+                if (!client_nameRes.ok) {
+                    throw new Error(
+                        `Client Name flush failed ${client_nameRes.status}`,
+                    );
+                }
+            }
+
             const res = await authFetch(
                 API_URL + "ticket/" + ticketState.uuid + "/pay",
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        is_paid: true,
-                    }),
+                    body: JSON.stringify({ is_paid: true }),
                 },
             );
 
@@ -212,9 +251,7 @@ export function useStoreTicket() {
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        client_name: client_name,
-                    }),
+                    body: JSON.stringify({ client_name }),
                 },
             );
 
@@ -242,9 +279,7 @@ export function useStoreTicket() {
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        comments: comments,
-                    }),
+                    body: JSON.stringify({ comments }),
                 },
             );
 
@@ -270,9 +305,7 @@ export function useStoreTicket() {
             const res = await authFetch(API_URL + "ticket/" + ticketState.id, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id_restaurant_table: id_restaurant_table,
-                }),
+                body: JSON.stringify({ id_restaurant_table }),
             });
 
             if (!res.ok) {
@@ -284,12 +317,6 @@ export function useStoreTicket() {
         } finally {
             syncLock.current = false;
             setSyncing(false);
-        }
-    }
-
-    async function waitForSyncLock() {
-        while (syncLock.current) {
-            await new Promise((r) => setTimeout(r, 50));
         }
     }
 

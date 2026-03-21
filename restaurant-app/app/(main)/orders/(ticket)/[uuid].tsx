@@ -47,7 +47,7 @@ export default function TicketView() {
     const [menuVisible, setMenuVisible] = useState(false);
 
     function triggerFlush() {
-        setTrigger(trigger + 1);
+        setTrigger((t) => t + 1);
     }
 
     function confirmPay() {
@@ -105,13 +105,17 @@ export default function TicketView() {
     async function handleRefresh() {
         if (!ticket) return;
         setSyncingTicket(true);
-        await refreshFromAPI(ticket?.uuid).then(() => setSyncingTicket(false));
+        try {
+            await refreshFromAPI(ticket.uuid);
+        } finally {
+            setSyncingTicket(false);
+        }
     }
 
     async function handlePrintForPay() {
         if (!ticket) return;
         triggerFlush();
-
+        await new Promise((r) => setTimeout(r, 50));
         await waitForSyncLock();
         const response = await authFetch(
             API_URL + "ticket/" + ticket.uuid + "/print?for_pay=true",
@@ -125,7 +129,7 @@ export default function TicketView() {
         if (!response.ok) {
             alert("No se ha enviado correctamente la peticion de impresion");
         } else {
-            payStoredTicket();
+            await payStoredTicket();
             alert("Enviado a imprimir correctamente");
         }
     }
@@ -133,8 +137,8 @@ export default function TicketView() {
     async function handlePrintTicket() {
         if (!ticket) return;
         triggerFlush();
-
-        await new Promise((r) => setTimeout(r, 250));
+        await new Promise((r) => setTimeout(r, 50));
+        await waitForSyncLock();
         const response = await authFetch(
             API_URL + "ticket/" + ticket.uuid + "/print?for_pay=false",
             {
@@ -153,6 +157,7 @@ export default function TicketView() {
 
     async function deleteTicket() {
         if (!ticket) return;
+        await waitForSyncLock();
 
         const response = await authFetch(`${API_URL}ticket/${ticket?.id}`, {
             method: "DELETE",
@@ -194,6 +199,12 @@ export default function TicketView() {
             setComments(ticket.comments);
         }
     }, [ticket]);
+
+    // TODO posible fix revisar luego
+    // useEffect(() => {
+    //     if (ticket && !clientName) setClientName(ticket.client_name ?? "");
+    //     if (ticket && !comments) setComments(ticket.comments ?? "");
+    // }, [ticket?.uuid]);
 
     if (!initialized || ticket_loading) {
         return (

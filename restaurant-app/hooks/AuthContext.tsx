@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             headers: {
                 ...options.headers,
                 Authorization: `Bearer ${token}`,
-                "X-App-Version": "vapp-0.1.0",
+                "X-App-Version": "vapp-1.0.0",
             },
         });
     }
