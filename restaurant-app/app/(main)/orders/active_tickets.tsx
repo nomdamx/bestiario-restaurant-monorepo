@@ -20,8 +20,7 @@ export default function OrdersActive() {
     async function fetchTickets() {
         try {
             const api_response: APIResponse<Ticket> = await authFetch(
-                API_URL +
-                    "ticket/?relations=true&is_active=true&filter_field=is_paid&filter_value=false",
+                API_URL + "ticket/?is_paid=false",
                 {
                     method: "GET",
                 },

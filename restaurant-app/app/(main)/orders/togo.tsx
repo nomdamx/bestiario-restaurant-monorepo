@@ -24,7 +24,7 @@ export default function ToGo() {
         if (!user) return;
 
         const response_togo = await authFetch(
-            API_URL + "restaurant-table/?filter_field=number&filter_value=0",
+            API_URL + "restaurant-table/?number=0",
             {
                 method: "GET",
             },

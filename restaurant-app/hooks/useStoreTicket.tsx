@@ -48,19 +48,16 @@ export function useStoreTicket() {
 
     async function fetchTicketStable(uuid: string, retries = 4) {
         let lastTotal: number | null = null;
+        let lastTicket: Ticket | null = null;
 
         for (let i = 0; i < retries; i++) {
             const res: APIResponse<Ticket> = await authFetch(
-                API_URL +
-                    "ticket/?filter_field=uuid&filter_value=" +
-                    uuid +
-                    "&relations=true&is_active=true",
-                {
-                    method: "GET",
-                },
+                API_URL + "ticket/" + uuid + "/orders",
+                { method: "GET" },
             ).then((r) => r.json());
 
             const ticket = res.response[0];
+            lastTicket = ticket ?? null;
 
             if (ticket && ticket.total === lastTotal) {
                 save(ticket);
@@ -71,17 +68,7 @@ export function useStoreTicket() {
             await new Promise((r) => setTimeout(r, 120));
         }
 
-        const res: APIResponse<Ticket> = await authFetch(
-            API_URL +
-                "ticket/?filter_field=uuid&filter_value=" +
-                uuid +
-                "&relations=true&is_active=true",
-            {
-                method: "GET",
-            },
-        ).then((r) => r.json());
-
-        save(res.response[0]);
+        if (lastTicket) save(lastTicket);
     }
 
     async function sendStoredTicket() {
@@ -101,7 +88,7 @@ export function useStoreTicket() {
             };
 
             const ticketRes = await authFetch(API_URL + "ticket/" + ticketId, {
-                method: "PUT",
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
@@ -124,7 +111,7 @@ export function useStoreTicket() {
                 };
 
                 const res = await authFetch(API_URL + "order/" + o.id, {
-                    method: "PUT",
+                    method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(orderPayload),
                 });
@@ -154,14 +141,16 @@ export function useStoreTicket() {
 
         try {
             console.log("pagando");
-            const res = await authFetch(API_URL + "ticket/pay", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id: ticketState.id,
-                    is_paid: true,
-                }),
-            });
+            const res = await authFetch(
+                API_URL + "ticket/" + ticketState.uuid + "/pay",
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        is_paid: true,
+                    }),
+                },
+            );
 
             if (!res.ok) {
                 throw new Error(`Payment failed ${res.status}`);
@@ -212,20 +201,22 @@ export function useStoreTicket() {
     }
 
     async function updateClientTicket(client_name: string) {
-        if (!ticketState || syncLock.current) return;
+        if (!ticketState || syncLock.current || !client_name) return;
 
         syncLock.current = true;
         setSyncing(true);
 
         try {
-            const res = await authFetch(API_URL + "ticket/client", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id: ticketState.id,
-                    client_name: client_name,
-                }),
-            });
+            const res = await authFetch(
+                API_URL + "ticket/" + ticketState.uuid + "/client",
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        client_name: client_name,
+                    }),
+                },
+            );
 
             if (!res.ok) {
                 throw new Error(`Client update failed ${res.status}`);
@@ -246,14 +237,16 @@ export function useStoreTicket() {
         setSyncing(true);
 
         try {
-            const res = await authFetch(API_URL + "ticket/comments", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id: ticketState.id,
-                    comments: comments,
-                }),
-            });
+            const res = await authFetch(
+                API_URL + "ticket/" + ticketState.uuid + "/comments",
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        comments: comments,
+                    }),
+                },
+            );
 
             if (!res.ok) {
                 throw new Error(`Comments update failed ${res.status}`);
@@ -274,11 +267,10 @@ export function useStoreTicket() {
         setSyncing(true);
 
         try {
-            const res = await authFetch(API_URL + "ticket/table", {
+            const res = await authFetch(API_URL + "ticket/" + ticketState.id, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    id: ticketState.id,
                     id_restaurant_table: id_restaurant_table,
                 }),
             });

@@ -82,9 +82,7 @@ export default function TicketView() {
         setTicketNotFound(false);
         try {
             const api_response: APIResponse<Ticket> = await authFetch(
-                API_URL +
-                    "ticket/?is_active=true&relations=true&filter_field=uuid&filter_value=" +
-                    uuid,
+                API_URL + "ticket/" + uuid + "/orders",
                 {
                     method: "GET",
                 },

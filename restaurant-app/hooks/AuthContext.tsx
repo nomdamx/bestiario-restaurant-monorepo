@@ -66,10 +66,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             await storeToken(token);
 
             const validation = await validateSessionToken(token);
+            console.log(validation);
             if (!validation.session || !validation.user) {
                 throw new Error("Invalid session after login");
             }
-
             setSession(validation.session);
             setUser(validation.user);
         } catch (error) {
@@ -112,7 +112,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(true);
         try {
             if (session) {
-                await invalidateSession(session.id);
+                const token = await getStoredToken();
+                if (!token) {
+                    setLoading(false);
+                    return;
+                }
+                await invalidateSession(token);
             }
         } catch (error) {
             console.warn("Error invalidando la sesión:", error);
@@ -132,7 +137,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             headers: {
                 ...options.headers,
                 Authorization: `Bearer ${token}`,
-                Accept: "application/vnd.restaurant-api.v1+json",
                 "X-App-Version": "vapp-0.1.0",
             },
         });

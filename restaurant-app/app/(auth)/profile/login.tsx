@@ -27,7 +27,7 @@ export default function LoginScreen() {
     async function fetchUsers() {
         setLoadingUsers(true);
         try {
-            const request = await authFetch(API_URL + "auth/user/", {
+            const request = await authFetch(API_URL + "auth/user", {
                 method: "GET",
             }).then((response) => response.json());
             setUsers(request.response);

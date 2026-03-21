@@ -1,7 +1,6 @@
 export interface Session {
-    id: string;
-    userId: number;
-    expiresAt: Date;
+    id_user: number;
+    expires_at: Date;
 }
 
 export interface User {
@@ -17,9 +16,9 @@ export type SessionValidationResult =
 
 export interface CreateSessionPayload {
     token: string;
-    userId: number;
+    id_user: number;
 }
 
 export interface InvalidateSessionPayload {
-    sessionId: string;
+    session_id: string;
 }

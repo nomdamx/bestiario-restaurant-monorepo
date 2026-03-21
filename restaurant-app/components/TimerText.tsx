@@ -3,7 +3,9 @@ import { Text } from "react-native";
 
 function formatElapsedTime(timestamp: string) {
     const now = new Date();
-    const created = new Date(timestamp);
+    const created = new Date(
+        timestamp.endsWith("Z") ? timestamp : timestamp + "Z",
+    );
 
     const diffMs = now.getTime() - created.getTime();
 

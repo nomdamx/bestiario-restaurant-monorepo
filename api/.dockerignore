@@ -1,16 +1,23 @@
-__pycache__/
+# Python
+.venv
+__pycache__
 *.pyc
 *.pyo
 *.pyd
-*.db
-*.sqlite3
-.env
-.venv
-dist/
-build/
+
+# Git
 .git
-.github
-docs/
-.mypy_cache/
-.pytest_cache/
-notas.txt
+.gitignore
+
+# Editor
+.vscode
+.idea
+
+# Env
+.env
+.env.*
+
+# Tests / cache
+.pytest_cache
+.mypy_cache
+.ruff_cache

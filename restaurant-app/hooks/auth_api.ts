@@ -2,7 +2,7 @@ import * as SecureStore from "expo-secure-store";
 import { Session, User, SessionValidationResult } from "types/auth";
 import Constants from "expo-constants";
 
-const API_URL = Constants.expoConfig?.extra?.flaskApiUrl + "auth/user/";
+const API_URL = Constants.expoConfig?.extra?.flaskApiUrl + "auth/";
 const TOKEN_KEY = "session_token";
 
 async function safeFetch(url: string, options?: RequestInit) {
@@ -36,36 +36,27 @@ export async function deleteStoredToken() {
 }
 
 export async function generateSessionToken(): Promise<string> {
-    const json = await safeFetch(API_URL + "session-token", {
+    const json = await safeFetch(API_URL + "session/token", {
         headers: { "X-App-Version": "vapp-0.1.0" },
     });
     return json.token;
 }
 
-export async function createSession(
-    token: string,
-    userId: number,
-): Promise<Session> {
-    const json = await safeFetch(API_URL + `create-session/${userId}`, {
+export async function createSession(token: string, id_user: number) {
+    await safeFetch(API_URL + `session`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "X-App-Version": "vapp-0.1.0",
         },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ id_user: id_user, token: token }),
     });
-
-    return {
-        id: json.session,
-        userId,
-        expiresAt: new Date(json.expires_at * 1000),
-    };
 }
 
 export async function validateSessionToken(
     token: string,
 ): Promise<SessionValidationResult> {
-    const json = await safeFetch(API_URL + "session-validation", {
+    const json = await safeFetch(API_URL + "session/validation", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -73,13 +64,11 @@ export async function validateSessionToken(
         },
         body: JSON.stringify({ token }),
     });
-
-    if (!json.session) return { session: null, user: null };
+    if (!json.user) return { session: null, user: null };
     return {
         session: {
-            id: json.session.session,
-            userId: json.session.id_user,
-            expiresAt: new Date(json.session.expires_at * 1000),
+            id_user: json.user.id,
+            expires_at: new Date(json.expires_at * 1000),
         },
         user: {
             id: json.user.id,
@@ -90,14 +79,14 @@ export async function validateSessionToken(
     };
 }
 
-export async function invalidateSession(sessionId: string) {
-    const res = await fetch(API_URL + "session-invalidation", {
-        method: "POST",
+export async function invalidateSession(token: string) {
+    const res = await fetch(API_URL + "session", {
+        method: "DELETE",
         headers: {
             "Content-Type": "application/json",
             "X-App-Version": "vapp-0.1.0",
         },
-        body: JSON.stringify({ session: sessionId }),
+        body: JSON.stringify({ token }),
     });
 
     if (!res.ok) {
@@ -118,13 +107,11 @@ export async function registerUser(
         body: JSON.stringify({ username, password, display_name: username }),
     });
 
-    if (json?.error) return null;
-
     return {
-        id: json.response[0].id,
-        username: json.response[0].username,
-        auth_level: json.response[0].auth_level,
-        display_name: json.response[0].display_name,
+        id: json.id,
+        username: json.username,
+        auth_level: json.auth_level,
+        display_name: json.display_name,
     };
 }
 
@@ -132,7 +119,7 @@ export async function validateUser(
     username: string,
     password: string,
 ): Promise<User | null> {
-    const json = await safeFetch(API_URL + "user-validation", {
+    const json = await safeFetch(API_URL + "user/validate", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -141,12 +128,12 @@ export async function validateUser(
         body: JSON.stringify({ username, password }),
     });
 
-    if (json.response?.[0]?.username === username) {
+    if (json.username === username) {
         return {
-            id: json.response[0].id,
-            username: json.response[0].username,
-            auth_level: json.response[0].auth_level,
-            display_name: json.response[0].display_name,
+            id: json.id,
+            username: json.username,
+            auth_level: json.auth_level,
+            display_name: json.display_name,
         };
     }
 
@@ -154,7 +141,7 @@ export async function validateUser(
 }
 
 export async function check_need_password(): Promise<boolean> {
-    const need_password_request = await fetch(API_URL + "need_password", {
+    const need_password_request = await fetch(API_URL + "system/password", {
         method: "GET",
         headers: { "X-App-Version": "vapp-0.1.0" },
     }).then((data) => data.json());
@@ -162,7 +149,7 @@ export async function check_need_password(): Promise<boolean> {
 }
 
 export async function check_admin_see_config(): Promise<boolean> {
-    const admin_see_password = await fetch(API_URL + "admin_see_config", {
+    const admin_see_password = await fetch(API_URL + "system/config", {
         method: "GET",
         headers: { "X-App-Version": "vapp-0.1.0" },
     }).then((data) => data.json());

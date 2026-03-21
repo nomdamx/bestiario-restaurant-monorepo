@@ -1,7 +1,6 @@
 services:
   db_restaurant:
     image: postgres:17
-    container_name: db_restaurant-service
     ports:
       - "5432:5432"
     volumes:
@@ -11,7 +10,6 @@ services:
 
   pgadmin_restaurant:
     image: dpage/pgadmin4:latest
-    container_name: pgadmin_restaurant-service
     env_file:
       - ./api/dev.env
     ports:
@@ -23,7 +21,6 @@ services:
     build:
       context: ./api
       dockerfile: dockerfile.dev
-    container_name: api_restaurant-service
     env_file:
       - ./api/dev.env
     ports:

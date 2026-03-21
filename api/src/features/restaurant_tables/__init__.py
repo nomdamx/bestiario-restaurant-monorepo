@@ -1,0 +1,1 @@
+from .route import router as router_restaurant_table

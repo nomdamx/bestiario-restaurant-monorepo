@@ -25,7 +25,7 @@ export default function Orders() {
                     text="Pedidos Activos"
                     path="/orders/active_tables"
                 />
-                <NavButton text="Pedidos Impresos" path="/orders/old" />
+                {/* <NavButton text="Pedidos Impresos" path="/orders/old" /> */}
             </View>
         </>
     );

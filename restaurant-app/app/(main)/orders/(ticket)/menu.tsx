@@ -54,11 +54,12 @@ export default function MenuView() {
     async function fetchMenu() {
         try {
             const api_respone: APIResponse<Category> = await authFetch(
-                API_URL + "category?relations=true&is_active=true",
+                API_URL + "category/menu",
                 {
                     method: "GET",
                 },
             ).then((response) => response.json());
+            console.log(api_respone.response);
             setCategories(api_respone.response);
         } catch (error) {
             console.log(String(error));
@@ -68,7 +69,7 @@ export default function MenuView() {
     async function fetchAddons() {
         try {
             const api_respone: APIResponse<ProductAddons> = await authFetch(
-                API_URL + "product-addons?is_active=true",
+                API_URL + "product-addon/",
                 {
                     method: "GET",
                 },
