@@ -11,6 +11,7 @@ import {
     registerUser,
 } from "hooks/auth_api";
 import { Session, User } from "types/auth";
+import Constants from "expo-constants";
 
 interface AuthContextType {
     user: User | null;
@@ -24,6 +25,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+const APP_VERSION = Constants.expoConfig?.extra?.appVersion;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -137,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             headers: {
                 ...options.headers,
                 Authorization: `Bearer ${token}`,
-                "X-App-Version": "vapp-1.0.0",
+                "X-App-Version": APP_VERSION,
             },
         });
     }

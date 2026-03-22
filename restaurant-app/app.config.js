@@ -1,4 +1,5 @@
 require("dotenv").config({ path: "./.env" });
+const { version } = require("./package.json");
 
 module.exports = ({ config }) => {
     const API_URL =
@@ -57,6 +58,7 @@ module.exports = ({ config }) => {
                 projectId: "db200e42-d575-4455-86e3-291ade23927f",
             },
             flaskApiUrl: API_URL,
+            appVersion: `vapp-${version}`,
         },
     };
 };
