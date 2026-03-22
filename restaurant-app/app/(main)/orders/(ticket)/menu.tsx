@@ -42,7 +42,7 @@ function productReducer(state: Record<number, ProductState>, action: Action) {
 
 export default function MenuView() {
     const API_URL = Constants.expoConfig?.extra?.flaskApiUrl;
-    const { ticket, refreshFromAPI } = useTicket();
+    const { ticket, refreshFromAPI, setSyncingTicket } = useTicket();
     const [categories, setCategories] = useState<Category[]>([]);
     const [addons, setAddons] = useState<ProductAddons[]>([]);
     const [search, setSearch] = useState("");
@@ -94,19 +94,19 @@ export default function MenuView() {
         fetchAddons();
     }, []);
 
-    function handleAdd() {
+    async function handleAdd() {
         if (!ticket) return;
-
-        Object.entries(productState).forEach(([productId, state]) => {
-            if (state.quantity <= 0) return;
-
-            sendOrder({
+        setSyncingTicket(true);
+        for (const [productId, state] of Object.entries(productState)) {
+            if (state.quantity <= 0) continue;
+            await sendOrder({
                 id_product: Number(productId),
                 quantity: state.quantity,
                 id_ticket: ticket.id,
                 order_addons: state.addons,
             });
-        });
+        }
+        setSyncingTicket(false);
         handleBack();
     }
 
