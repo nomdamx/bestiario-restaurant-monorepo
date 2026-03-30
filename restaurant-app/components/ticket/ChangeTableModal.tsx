@@ -21,7 +21,7 @@ export default function ChangeTableModal({ visible, setVisible }: Props) {
     async function fetchTables() {
         try {
             const table_response: APIResponse<RestaurantTable> =
-                await authFetch(API_URL + "restaurant-table?is_active=true", {
+                await authFetch(API_URL + "restaurant-table/?is_active=true", {
                     method: "GET",
                 }).then((response) => response.json());
             setTables(table_response.response);
