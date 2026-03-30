@@ -59,7 +59,6 @@ export default function MenuView() {
                     method: "GET",
                 },
             ).then((response) => response.json());
-            console.log(api_respone.response);
             setCategories(api_respone.response);
         } catch (error) {
             console.log(String(error));
