@@ -5,6 +5,8 @@ from sqlalchemy.sql.elements import ColumnElement
 
 from src.core.custom_errors import ValidationError
 from src.models import Order, PrintListTicket, Ticket, User
+from src.core.recalc_totals import recalc_ticket_total
+
 
 from . import dependency, schema
 
@@ -152,6 +154,10 @@ def print_ticket(
         else:
             print_list_ticket.print_for_pay = False
 
+    db.flush()
+    recalc_ticket_total(db,id_ticket=ticket.id)
+    db.flush()
+    db.refresh(ticket)
     db.commit()
     return print_list_ticket
 
@@ -179,6 +185,10 @@ def patch_paid_status(
 ) -> Ticket:
     ticket = get_by_uuid(db, uuid=uuid)
     ticket.is_paid = payload.is_paid
+    db.flush()
+    recalc_ticket_total(db,id_ticket=ticket.id)
+    db.flush()
+    db.refresh(ticket)
     db.commit()
     return ticket
 

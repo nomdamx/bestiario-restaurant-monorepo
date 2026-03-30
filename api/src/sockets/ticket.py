@@ -150,14 +150,14 @@ def get_pending_tickets():
         tickets = (
             session.query(PrintListTicket)
             .join(PrintListTicket.ticket)
-            .join(Ticket.orders)
+            .join(Ticket.orders.and_(Order.is_active))
             .options(
                 joinedload(PrintListTicket.ticket)
-                .joinedload(Ticket.orders)
+                .joinedload(Ticket.orders.and_(Order.is_active))
                 .joinedload(Order.product)
                 .joinedload(Product.category),
                 joinedload(PrintListTicket.ticket)
-                .joinedload(Ticket.orders)
+                .joinedload(Ticket.orders.and_(Order.is_active))
                 .joinedload(Order.order_addons)
                 .joinedload(OrderAddons.product_addons),
                 joinedload(PrintListTicket.ticket).joinedload(Ticket.restaurant_table),
